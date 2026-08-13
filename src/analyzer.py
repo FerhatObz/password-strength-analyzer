@@ -1,5 +1,7 @@
 from src.entropy import calculate_entropy
 from src.patterns import analyze_patterns
+from src.policy import evaluate_policy
+from src.score import calculate_score
 
 
 def load_common_passwords():
@@ -21,7 +23,7 @@ def analyze_password(password):
     # Harf veya rakam olmayan karakterleri özel karakter kabul ediyoruz.
     has_special = any(not char.isalnum() for char in password)
 
-    # Entropy hesabında kullanacağımız karakter havuzunu oluşturuyoruz.
+    # Kullanılan karakter türlerine göre karakter havuzunu oluşturuyoruz.
     charset_size = 0
 
     if has_lowercase:
@@ -45,10 +47,33 @@ def analyze_password(password):
     # Büyük/küçük harf farkını ortadan kaldırarak karşılaştırıyoruz.
     is_common = password.lower() in common_passwords
 
-    # Parolada tekrar veya sıralı karakter gibi basit patternleri arıyoruz.
+    # Tekrar veya sıralı karakter gibi tahmin edilebilir yapıları arıyoruz.
     patterns = analyze_patterns(password)
 
-    # Bütün analiz sonuçlarını tek bir yapıda topluyoruz.
+    # Bütün analiz sonuçlarını parola politikasıyla değerlendiriyoruz.
+    policy = evaluate_policy({
+        "length": len(password),
+        "has_lowercase": has_lowercase,
+        "has_uppercase": has_uppercase,
+        "has_digit": has_digit,
+        "has_special": has_special,
+        "is_common": is_common,
+        "patterns": patterns
+    })
+
+    # Analiz sonuçlarını kullanarak 0-100 arasında bir skor oluşturuyoruz.
+    score = calculate_score({
+        "length": len(password),
+        "has_lowercase": has_lowercase,
+        "has_uppercase": has_uppercase,
+        "has_digit": has_digit,
+        "has_special": has_special,
+        "entropy": entropy,
+        "is_common": is_common,
+        "patterns": patterns
+    })
+
+    # Bütün sonuçları tek bir yapıda topluyoruz.
     return {
         "length": len(password),
         "has_lowercase": has_lowercase,
@@ -58,5 +83,7 @@ def analyze_password(password):
         "charset_size": charset_size,
         "entropy": entropy,
         "is_common": is_common,
-        "patterns": patterns
+        "patterns": patterns,
+        "policy": policy,
+        "score": score
     }
