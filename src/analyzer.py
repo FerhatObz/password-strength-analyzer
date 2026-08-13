@@ -1,4 +1,5 @@
 from src.entropy import calculate_entropy
+from src.patterns import analyze_patterns
 
 
 def load_common_passwords():
@@ -44,6 +45,10 @@ def analyze_password(password):
     # Büyük/küçük harf farkını ortadan kaldırarak karşılaştırıyoruz.
     is_common = password.lower() in common_passwords
 
+    # Parolada tekrar veya sıralı karakter gibi basit patternleri arıyoruz.
+    patterns = analyze_patterns(password)
+
+    # Bütün analiz sonuçlarını tek bir yapıda topluyoruz.
     return {
         "length": len(password),
         "has_lowercase": has_lowercase,
@@ -52,5 +57,6 @@ def analyze_password(password):
         "has_special": has_special,
         "charset_size": charset_size,
         "entropy": entropy,
-        "is_common": is_common
+        "is_common": is_common,
+        "patterns": patterns
     }
